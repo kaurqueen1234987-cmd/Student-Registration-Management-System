@@ -5,7 +5,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Student Management System</title>
-
 <style>
 *{box-sizing:border-box;font-family:Arial}
 body{margin:0;background:#eef2ff;color:#222}
@@ -16,8 +15,7 @@ header{background:linear-gradient(120deg,#4338ca,#9333ea);color:white;text-align
 .card{flex:1;min-width:180px}
 .card h2{color:#4f46e5}
 input{width:100%;padding:12px;margin:8px 0;border:1px solid #ccc;border-radius:7px}
-button{background:#4f46e5;color:white;border:0;padding:12px 18px;border-radius:7px;cursor:pointer}
-button:hover{background:#3730a3}
+button{background:#4f46e5;color:white;border:0;padding:12px 18px;border-radius:7px;cursor:pointer;margin:5px}
 table{width:100%;border-collapse:collapse;margin-top:15px}
 th,td{padding:12px;border-bottom:1px solid #ddd;text-align:left}
 th{background:#4f46e5;color:white}
@@ -25,24 +23,23 @@ th{background:#4f46e5;color:white}
 #message{color:#4f46e5}
 </style>
 </head>
-
 <body>
 
 <header>
 <h1>Student Management System</h1>
 <p>Manage Student Records Easily</p>
+<button id="logoutBtn">Logout</button>
 </header>
 
 <div class="container">
-
 <div class="cards">
 <div class="card">
 <h3>Total Students</h3>
 <h2 id="totalStudents">0</h2>
 </div>
 <div class="card">
-<h3>Project Status</h3>
-<h2>Active</h2>
+<h3>Welcome</h3>
+<h2 id="welcome">Student</h2>
 </div>
 </div>
 
@@ -59,158 +56,133 @@ th{background:#4f46e5;color:white}
 <div class="table-box">
 <h2>Student Records</h2>
 <input id="search" placeholder="Search Student">
-
 <table>
 <thead>
-<tr>
-<th>Name</th>
-<th>Email</th>
-<th>Phone</th>
-<th>Course</th>
-</tr>
+<tr><th>Name</th><th>Email</th><th>Phone</th><th>Course</th></tr>
 </thead>
 <tbody id="studentTable">
-<tr><td colspan="4">No records yet</td></tr>
+<tr><td colspan="4">Loading records...</td></tr>
 </tbody>
 </table>
 </div>
-
 </div>
 
 <script type="module">
-
-// Firebase imports
-import { initializeApp }
+import {initializeApp}
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
-import { getAuth, onAuthStateChanged }
+import {getAuth,onAuthStateChanged,signOut}
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-// 1. PASTE YOUR FIREBASE CONFIG HERE
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+apiKey:"AIzaSyDlFOW4R4guY33-HkM3Lcms_ZgaaBO7Xys",
+authDomain:"student-management-syste-bfb0e.firebaseapp.com",
+projectId:"student-management-syste-bfb0e",
+storageBucket:"student-management-syste-bfb0e.firebasestorage.app",
+messagingSenderId:"1014947615526",
+appId:"1:1014947615526:web:49c33237264557f9c5a7e7",
+measurementId:"G-PER6S3KD3F"
 };
 
-// 2. PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE
-const GOOGLE_SCRIPT_URL = "YOUR_GOOGLE_SCRIPT_EXEC_URL";
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+// Paste your Google Apps Script Web App /exec URL here
+const GOOGLE_SCRIPT_URL="YOUR_GOOGLE_SCRIPT_EXEC_URL";
 
-let students = [];
+let students=[];
 
-const nameInput = document.getElementById("name");
-const emailInput = document.getElementById("email");
-const phoneInput = document.getElementById("phone");
-const courseInput = document.getElementById("course");
-const message = document.getElementById("message");
-const table = document.getElementById("studentTable");
+const table=document.getElementById("studentTable");
+const message=document.getElementById("message");
 
-// Load student records from Google Sheets
-async function loadStudents() {
-  try {
-    const response = await fetch(GOOGLE_SCRIPT_URL);
-    if (!response.ok) throw new Error("Unable to load records");
-
-    students = await response.json();
-    displayStudents(students);
-  } catch (error) {
-    message.textContent =
-      "Could not load records. Check your Google Script URL.";
-  }
+onAuthStateChanged(auth,user=>{
+if(!user){
+window.location.href="index.html";
+return;
 }
 
-// Display student records
-function displayStudents(data) {
-  table.innerHTML = "";
+document.getElementById("welcome").textContent=
+user.displayName||user.email;
 
-  if (!Array.isArray(data) || data.length === 0) {
-    table.innerHTML =
-      '<tr><td colspan="4">No student records found</td></tr>';
-    document.getElementById("totalStudents").textContent = 0;
-    return;
-  }
+loadStudents();
+});
 
-  data.forEach(student => {
-    const row = document.createElement("tr");
+async function loadStudents(){
+try{
+const response=await fetch(GOOGLE_SCRIPT_URL);
+if(!response.ok)throw new Error("Loading failed");
 
-    [student.name, student.email, student.phone, student.course]
-      .forEach(value => {
-        const cell = document.createElement("td");
-        cell.textContent = value || "";
-        row.appendChild(cell);
-      });
+students=await response.json();
+if(!Array.isArray(students))throw new Error("Invalid data");
 
-    table.appendChild(row);
-  });
-
-  document.getElementById("totalStudents").textContent = data.length;
+displayStudents(students);
+}catch(error){
+table.innerHTML=
+'<tr><td colspan="4">Could not load records. Check Apps Script URL and doGet().</td></tr>';
+}
 }
 
-// Add new student to Google Sheets
-document.getElementById("addBtn").addEventListener("click", async () => {
-  const student = {
-    name: nameInput.value.trim(),
-    email: emailInput.value.trim(),
-    phone: phoneInput.value.trim(),
-    course: courseInput.value.trim()
-  };
+function displayStudents(data){
+table.innerHTML="";
 
-  if (!student.name || !student.email ||
-      !student.phone || !student.course) {
-    message.textContent = "Please fill all fields.";
-    return;
-  }
+if(data.length===0){
+table.innerHTML='<tr><td colspan="4">No student records found</td></tr>';
+}else{
+data.forEach(s=>{
+const row=document.createElement("tr");
 
-  try {
-    await fetch(GOOGLE_SCRIPT_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: {
-        "Content-Type": "text/plain;charset=utf-8"
-      },
-      body: JSON.stringify(student)
-    });
-
-    message.textContent =
-      "Request sent. Please check your Google Sheet.";
-
-    nameInput.value = "";
-    emailInput.value = "";
-    phoneInput.value = "";
-    courseInput.value = "";
-
-  } catch (error) {
-    message.textContent = "Error sending student data.";
-  }
+[s.name,s.email,s.phone,s.course].forEach(value=>{
+const cell=document.createElement("td");
+cell.textContent=value||"";
+row.appendChild(cell);
 });
 
-// Search students
-document.getElementById("search").addEventListener("input", event => {
-  const searchText = event.target.value.toLowerCase();
+table.appendChild(row);
+});
+}
 
-  const filtered = students.filter(student =>
-    (student.name || "").toLowerCase().includes(searchText) ||
-    (student.email || "").toLowerCase().includes(searchText)
-  );
+document.getElementById("totalStudents").textContent=data.length;
+}
 
-  displayStudents(filtered);
+document.getElementById("addBtn").onclick=async()=>{
+const student={
+name:document.getElementById("name").value.trim(),
+email:document.getElementById("email").value.trim(),
+phone:document.getElementById("phone").value.trim(),
+course:document.getElementById("course").value.trim()
+};
+
+if(Object.values(student).some(v=>!v)){
+message.textContent="Please fill all fields.";
+return;
+}
+
+try{
+await fetch(GOOGLE_SCRIPT_URL,{
+method:"POST",
+mode:"no-cors",
+headers:{"Content-Type":"text/plain;charset=utf-8"},
+body:JSON.stringify(student)
 });
 
-// Firebase login check
-onAuthStateChanged(auth, user => {
-  if (!user) {
-    window.location.href = "index.html";
-  } else {
-    loadStudents();
-  }
-});
+message.textContent="Request sent. Check your Google Sheet to confirm.";
+}catch(error){
+message.textContent="Error sending data.";
+}
+};
 
+document.getElementById("search").oninput=e=>{
+const q=e.target.value.toLowerCase();
+displayStudents(students.filter(s=>
+(s.name||"").toLowerCase().includes(q)||
+(s.email||"").toLowerCase().includes(q)
+));
+};
+
+document.getElementById("logoutBtn").onclick=async()=>{
+await signOut(auth);
+window.location.href="index.html";
+};
 </script>
 </body>
 </html>
