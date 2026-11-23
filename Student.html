@@ -1,0 +1,216 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Management System</title>
+
+<style>
+*{box-sizing:border-box;font-family:Arial}
+body{margin:0;background:#eef2ff;color:#222}
+header{background:linear-gradient(120deg,#4338ca,#9333ea);color:white;text-align:center;padding:25px}
+.container{max-width:1100px;margin:30px auto;padding:15px}
+.cards{display:flex;gap:15px;flex-wrap:wrap}
+.card,.form-box,.table-box{background:white;padding:20px;border-radius:12px;margin-bottom:20px;box-shadow:0 3px 12px #0001}
+.card{flex:1;min-width:180px}
+.card h2{color:#4f46e5}
+input{width:100%;padding:12px;margin:8px 0;border:1px solid #ccc;border-radius:7px}
+button{background:#4f46e5;color:white;border:0;padding:12px 18px;border-radius:7px;cursor:pointer}
+button:hover{background:#3730a3}
+table{width:100%;border-collapse:collapse;margin-top:15px}
+th,td{padding:12px;border-bottom:1px solid #ddd;text-align:left}
+th{background:#4f46e5;color:white}
+.table-box{overflow-x:auto}
+#message{color:#4f46e5}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>Student Management System</h1>
+<p>Manage Student Records Easily</p>
+</header>
+
+<div class="container">
+
+<div class="cards">
+<div class="card">
+<h3>Total Students</h3>
+<h2 id="totalStudents">0</h2>
+</div>
+<div class="card">
+<h3>Project Status</h3>
+<h2>Active</h2>
+</div>
+</div>
+
+<div class="form-box">
+<h2>Add New Student</h2>
+<input id="name" placeholder="Student Name">
+<input id="email" type="email" placeholder="Email Address">
+<input id="phone" placeholder="Phone Number">
+<input id="course" placeholder="Course Name">
+<button id="addBtn">Add Student</button>
+<p id="message"></p>
+</div>
+
+<div class="table-box">
+<h2>Student Records</h2>
+<input id="search" placeholder="Search Student">
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Email</th>
+<th>Phone</th>
+<th>Course</th>
+</tr>
+</thead>
+<tbody id="studentTable">
+<tr><td colspan="4">No records yet</td></tr>
+</tbody>
+</table>
+</div>
+
+</div>
+
+<script type="module">
+
+// Firebase imports
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import { getAuth, onAuthStateChanged }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+// 1. PASTE YOUR FIREBASE CONFIG HERE
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+
+// 2. PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE
+const GOOGLE_SCRIPT_URL = "YOUR_GOOGLE_SCRIPT_EXEC_URL";
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+let students = [];
+
+const nameInput = document.getElementById("name");
+const emailInput = document.getElementById("email");
+const phoneInput = document.getElementById("phone");
+const courseInput = document.getElementById("course");
+const message = document.getElementById("message");
+const table = document.getElementById("studentTable");
+
+// Load student records from Google Sheets
+async function loadStudents() {
+  try {
+    const response = await fetch(GOOGLE_SCRIPT_URL);
+    if (!response.ok) throw new Error("Unable to load records");
+
+    students = await response.json();
+    displayStudents(students);
+  } catch (error) {
+    message.textContent =
+      "Could not load records. Check your Google Script URL.";
+  }
+}
+
+// Display student records
+function displayStudents(data) {
+  table.innerHTML = "";
+
+  if (!Array.isArray(data) || data.length === 0) {
+    table.innerHTML =
+      '<tr><td colspan="4">No student records found</td></tr>';
+    document.getElementById("totalStudents").textContent = 0;
+    return;
+  }
+
+  data.forEach(student => {
+    const row = document.createElement("tr");
+
+    [student.name, student.email, student.phone, student.course]
+      .forEach(value => {
+        const cell = document.createElement("td");
+        cell.textContent = value || "";
+        row.appendChild(cell);
+      });
+
+    table.appendChild(row);
+  });
+
+  document.getElementById("totalStudents").textContent = data.length;
+}
+
+// Add new student to Google Sheets
+document.getElementById("addBtn").addEventListener("click", async () => {
+  const student = {
+    name: nameInput.value.trim(),
+    email: emailInput.value.trim(),
+    phone: phoneInput.value.trim(),
+    course: courseInput.value.trim()
+  };
+
+  if (!student.name || !student.email ||
+      !student.phone || !student.course) {
+    message.textContent = "Please fill all fields.";
+    return;
+  }
+
+  try {
+    await fetch(GOOGLE_SCRIPT_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify(student)
+    });
+
+    message.textContent =
+      "Request sent. Please check your Google Sheet.";
+
+    nameInput.value = "";
+    emailInput.value = "";
+    phoneInput.value = "";
+    courseInput.value = "";
+
+  } catch (error) {
+    message.textContent = "Error sending student data.";
+  }
+});
+
+// Search students
+document.getElementById("search").addEventListener("input", event => {
+  const searchText = event.target.value.toLowerCase();
+
+  const filtered = students.filter(student =>
+    (student.name || "").toLowerCase().includes(searchText) ||
+    (student.email || "").toLowerCase().includes(searchText)
+  );
+
+  displayStudents(filtered);
+});
+
+// Firebase login check
+onAuthStateChanged(auth, user => {
+  if (!user) {
+    window.location.href = "index.html";
+  } else {
+    loadStudents();
+  }
+});
+
+</script>
+</body>
+</html>
