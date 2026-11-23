@@ -4,53 +4,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Creative Sign Up Page</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Student Sign Up Page</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .signup-box {
+            background: white;
+            width: 100%;
+            max-width: 430px;
+            padding: 35px;
+            border-radius: 25px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+
+        .logo {
+            width: 65px;
+            height: 65px;
+            background: linear-gradient(135deg, #667eea, #f093fb);
+            color: white;
+            font-size: 35px;
+            border-radius: 18px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: bold;
+            color: #444;
+        }
+
+        input {
+            width: 100%;
+            padding: 13px;
+            margin-bottom: 18px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        input:focus {
+            border-color: #8b5cf6;
+            box-shadow: 0 0 7px rgba(139,92,246,0.2);
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #667eea, #c471ed);
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 22px;
+            color: #777;
+            font-size: 14px;
+        }
+
+        .footer a {
+            color: #764ba2;
+            text-decoration: none;
+            font-weight: bold;
+        }
+    </style>
 </head>
 
 <body>
 
-    <div class="main-container">
+    <div class="signup-box">
 
-        <div class="signup-card">
+        <div class="logo">✦</div>
 
-            <div class="logo">✦</div>
+        <h1>Create Account</h1>
 
-            <h1>Create Account</h1>
-            <p class="subtitle">Join us and start your journey!</p>
+        <p class="subtitle">
+            Welcome! Create your student account
+        </p>
 
-            <form>
+        <form>
 
-                <div class="input-group">
-                    <label>Full Name</label>
-                    <input type="text" placeholder="Enter your name" required>
-                </div>
+            <label>Full Name</label>
+            <input type="text" placeholder="Enter your full name" required>
 
-                <div class="input-group">
-                    <label>Email Address</label>
-                    <input type="email" placeholder="Enter your email" required>
-                </div>
+            <label>Email Address</label>
+            <input type="email" placeholder="Enter your email" required>
 
-                <div class="input-group">
-                    <label>Password</label>
-                    <input type="password" placeholder="Create password" required>
-                </div>
+            <label>Phone Number</label>
+            <input type="tel" placeholder="Enter phone number" required>
 
-                <div class="input-group">
-                    <label>Confirm Password</label>
-                    <input type="password" placeholder="Confirm password" required>
-                </div>
+            <label>Password</label>
+            <input type="password" placeholder="Create password" required>
 
-                <button type="submit">Create Account →</button>
+            <label>Confirm Password</label>
+            <input type="password" placeholder="Confirm password" required>
 
-            </form>
+            <button type="submit">
+                Sign Up →
+            </button>
 
-            <p class="bottom-text">
-                Already have an account?
-                <a href="#">Login</a>
-            </p>
+        </form>
 
-        </div>
+        <p class="footer">
+            Already have an account? <a href="#">Login</a>
+        </p>
 
     </div>
 
