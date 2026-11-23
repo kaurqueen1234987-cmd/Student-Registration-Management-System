@@ -1,156 +1,115 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Sign Up Page</title>
-
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
-
-        body {
-            min-height: 100vh;
-            background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .signup-box {
-            background: white;
-            width: 100%;
-            max-width: 430px;
-            padding: 35px;
-            border-radius: 25px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
-        }
-
-        .logo {
-            width: 65px;
-            height: 65px;
-            background: linear-gradient(135deg, #667eea, #f093fb);
-            color: white;
-            font-size: 35px;
-            border-radius: 18px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 0 auto 20px;
-        }
-
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 10px;
-        }
-
-        .subtitle {
-            text-align: center;
-            color: #888;
-            margin-bottom: 25px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 7px;
-            font-weight: bold;
-            color: #444;
-        }
-
-        input {
-            width: 100%;
-            padding: 13px;
-            margin-bottom: 18px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            outline: none;
-            font-size: 14px;
-        }
-
-        input:focus {
-            border-color: #8b5cf6;
-            box-shadow: 0 0 7px rgba(139,92,246,0.2);
-        }
-
-        button {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 10px;
-            background: linear-gradient(135deg, #667eea, #c471ed);
-            color: white;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        button:hover {
-            transform: translateY(-3px);
-        }
-
-        .footer {
-            text-align: center;
-            margin-top: 22px;
-            color: #777;
-            font-size: 14px;
-        }
-
-        .footer a {
-            color: #764ba2;
-            text-decoration: none;
-            font-weight: bold;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Registration</title>
+<style>
+*{box-sizing:border-box;font-family:Arial}
+body{margin:0;background:linear-gradient(135deg,#6366f1,#c084fc);min-height:100vh;display:grid;place-items:center;padding:20px}
+.container{background:white;padding:30px;border-radius:18px;width:100%;max-width:400px;box-shadow:0 8px 25px #0002}
+h1{text-align:center;color:#4f46e5}
+input{width:100%;padding:13px;margin:9px 0;border:1px solid #ccc;border-radius:8px}
+button{width:100%;padding:13px;margin-top:12px;background:#4f46e5;color:white;border:0;border-radius:8px;cursor:pointer}
+.switch{text-align:center;margin-top:18px;color:#4f46e5;cursor:pointer}
+#message{text-align:center;color:#dc2626}
+</style>
 </head>
-
 <body>
 
-    <div class="signup-box">
+<div class="container">
+<h1 id="heading">Student Sign Up</h1>
 
-        <div class="logo">✦</div>
+<input id="name" placeholder="Full Name">
+<input id="email" type="email" placeholder="Email Address">
+<input id="password" type="password" placeholder="Password (minimum 6 characters)">
 
-        <h1>Create Account</h1>
+<button id="mainBtn">Create Account</button>
+<p id="message"></p>
+<p class="switch" id="switchBtn">Already have an account? Login</p>
+</div>
 
-        <p class="subtitle">
-            Welcome! Create your student account
-        </p>
+<script type="module">
+import {initializeApp}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
-        <form>
+import {
+getAuth,createUserWithEmailAndPassword,
+signInWithEmailAndPassword,updateProfile
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-            <label>Full Name</label>
-            <input type="text" placeholder="Enter your full name" required>
+const firebaseConfig = {
+apiKey:"AIzaSyDlFOW4R4guY33-HkM3Lcms_ZgaaBO7Xys",
+authDomain:"student-management-syste-bfb0e.firebaseapp.com",
+projectId:"student-management-syste-bfb0e",
+storageBucket:"student-management-syste-bfb0e.firebasestorage.app",
+messagingSenderId:"1014947615526",
+appId:"1:1014947615526:web:49c33237264557f9c5a7e7",
+measurementId:"G-PER6S3KD3F"
+};
 
-            <label>Email Address</label>
-            <input type="email" placeholder="Enter your email" required>
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
 
-            <label>Phone Number</label>
-            <input type="tel" placeholder="Enter phone number" required>
+let isLogin=false;
 
-            <label>Password</label>
-            <input type="password" placeholder="Create password" required>
+const name=document.getElementById("name");
+const email=document.getElementById("email");
+const password=document.getElementById("password");
+const message=document.getElementById("message");
+const heading=document.getElementById("heading");
+const mainBtn=document.getElementById("mainBtn");
+const switchBtn=document.getElementById("switchBtn");
 
-            <label>Confirm Password</label>
-            <input type="password" placeholder="Confirm password" required>
+switchBtn.onclick=()=>{
+isLogin=!isLogin;
+heading.textContent=isLogin?"Student Login":"Student Sign Up";
+mainBtn.textContent=isLogin?"Login":"Create Account";
+switchBtn.textContent=isLogin?
+"New student? Create account":
+"Already have an account? Login";
+name.style.display=isLogin?"none":"block";
+message.textContent="";
+};
 
-            <button type="submit">
-                Sign Up →
-            </button>
+mainBtn.onclick=async()=>{
+message.textContent="";
 
-        </form>
+const e=email.value.trim();
+const p=password.value;
+const n=name.value.trim();
 
-        <p class="footer">
-            Already have an account? <a href="#">Login</a>
-        </p>
+if(!e||!p||(!isLogin&&!n)){
+message.textContent="Please fill all required fields.";
+return;
+}
 
-    </div>
+if(p.length<6){
+message.textContent="Password must be at least 6 characters.";
+return;
+}
 
+mainBtn.disabled=true;
+
+try{
+if(isLogin){
+await signInWithEmailAndPassword(auth,e,p);
+}else{
+const result=await createUserWithEmailAndPassword(auth,e,p);
+await updateProfile(result.user,{displayName:n});
+}
+
+window.location.href="student.html";
+
+}catch(error){
+message.textContent=error.message;
+}finally{
+mainBtn.disabled=false;
+}
+};
+</script>
 </body>
 </html>
+        .
